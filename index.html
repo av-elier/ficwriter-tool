@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Ficwriter</title>
+
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+
+  <body>
+    <div class="ficContainer">
+      <div class="fic textareaContainer">
+        <textarea id="fictext" style="overflow:hidden"></textarea>
+      </div>
+
+      <div class="fic">
+        <span id="ficcolored"></span>
+      </div>
+    </div>
+
+  </body>
+
+  <script>
+    require('./freq.js')
+    require('./renderer.js')
+  </script>
+</html>
