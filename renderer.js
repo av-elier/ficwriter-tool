@@ -47,10 +47,10 @@ function syncColored() {
         });
     lastSyncId = lastSyncId + 1;
     let currentSyncId = lastSyncId;
-    mystem.list(allWords.map(w => /[а-яёА-ЯЁ]+|/.exec(w)[0]), (mainGuesses) => {
+    mystem.list(allWords.map(w => (/[а-яёА-ЯЁ]+/.exec(w)||[])[0]), (mainGuesses) => {
         if (currentSyncId !== lastSyncId) return;
         let colorizedHtml = allWords
-            .map(word => colorizeWord(word, mainGuesses[/[а-яёА-ЯЁ]+|/.exec(word)[0]]))
+            .map(word => colorizeWord(word, mainGuesses[(/[а-яёА-ЯЁ]+/.exec(word)||[])[0]]))
             .join(' ')
             .split('\n').join('<br>')
 

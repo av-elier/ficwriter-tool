@@ -19,14 +19,18 @@ let mystem = function(sentence, cb) {
     });
 
     proc.stdout.on('end', function () {
-        // console.log('Mystem end');
+        console.log(sentence);
         let mainGuesses = {};
-        list.join()
+        let wordsAndBase = list.join('\n')
             .split('\n')
             .filter(r => r !== '')
             .map(r => /^([\wа-яА-ЯёЁ]+)\{([\wа-яА-ЯёЁ]+)[^\w]/.exec(r))
-            .filter(r => r != null)
-            .forEach(r => mainGuesses[r[1]] = r[2])
+            .filter(r => r != null);
+
+        for (var i = 0; i < wordsAndBase.length; i++) {
+            var wnb = wordsAndBase[i];
+            mainGuesses[wnb[1]] = wnb[2];
+        }
 
         cb(mainGuesses);
     });
@@ -34,6 +38,6 @@ let mystem = function(sentence, cb) {
 
 module.exports = {
     single: (word, cb) => mystem(word, (x) => cb(x[word])),
-    list: (words, cb) => mystem(words.join('\n'), cb),
+    list: (words, cb) => mystem(words.join('.\n'), cb),
     raw: (sencence, cb) => mystem(sencence, cb),
 };
