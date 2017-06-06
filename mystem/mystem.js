@@ -7,10 +7,7 @@ let mystem = function(sentence, cb) {
     proc.stdin.setEncoding('utf8');
     proc.stdout.setEncoding('utf8');
 
-    // console.log('Mystem start');
-
     proc.stdin.write(sentence, () => {
-        // console.log('Mystem done writing request');
         proc.stdin.end();
     });
 
@@ -19,7 +16,6 @@ let mystem = function(sentence, cb) {
     });
 
     proc.stdout.on('end', function () {
-        console.log(sentence);
         let mainGuesses = {};
         let wordsAndBase = list.join('\n')
             .split('\n')
