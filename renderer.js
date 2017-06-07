@@ -7,9 +7,9 @@ var ipc = require('electron').ipcRenderer;
 var fictext = document.getElementById('fictext');
 var ficcolored = document.getElementById('ficcolored');
 
-let mystem = require('./mystem/mystem.js');
+let mystem = require(__dirname + '\\mystem\\mystem.js');
 
-let freq = require('./freq.js');
+let freq = require(__dirname + '\\freq.js');
 
 function freqColor(word) {
     let posInAll = freq.all.indexOf(word.toLowerCase());
@@ -38,6 +38,9 @@ function colorizeWord(word, base) {
 }
 let lastSyncId = 0;
 function syncColored() {
+    const path = require('path');
+    ficcolored.innerHTML = path.resolve('.') + '\n' + path.resolve('mystem/mystem.exe');
+
     const allWords = fictext.value
         .split('\n')
         .flatMap(line => {

@@ -1,8 +1,7 @@
 const exec = require('child_process').exec;
 
 let mystem = function(sentence, cb) {
-    var proc = exec('.\\mystem\\mystem.exe -n')
-
+    var proc = exec(__dirname + '\\mystem.exe -n')
     var list = [];
     proc.stdin.setEncoding('utf8');
     proc.stdout.setEncoding('utf8');
