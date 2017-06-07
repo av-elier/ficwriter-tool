@@ -1,4 +1,3 @@
-let mystem = require('./mystem/mystem.js');
 var csv = require('fast-csv');
 
 let wordsAllWeights = {};
@@ -6,7 +5,7 @@ let wordsAll = [];
 let wordsAllSorted = [];
 let wordsBook = [];
 
-csv.fromPath("freq\\freqrnc2011.csv", {delimiter: '\t'})
+csv.fromPath(__dirname + "\\freq\\freqrnc2011.csv", {delimiter: '\t'})
     .on("data", function(data){
         wordsAllWeights[data[0]] = data[2];
         wordsAll.push(data[0]);
@@ -21,7 +20,7 @@ csv.fromPath("freq\\freqrnc2011.csv", {delimiter: '\t'})
         console.log("done");
     });
 
-csv.fromPath("freq\\Maks.csv", {delimiter: ','})
+csv.fromPath(__dirname + "\\freq\\Maks.csv", {delimiter: ','})
     .on("data", function(data){
         wordsBook.push(data[0]);
     })

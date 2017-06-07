@@ -39,7 +39,6 @@ function colorizeWord(word, base) {
 let lastSyncId = 0;
 function syncColored() {
     const path = require('path');
-    ficcolored.innerHTML = path.resolve('.') + '\n' + path.resolve('mystem/mystem.exe');
 
     const allWords = fictext.value
         .split('\n')
