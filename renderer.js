@@ -12,20 +12,22 @@ let mystem = require(__dirname + '\\mystem\\mystem.js');
 let freq = require(__dirname + '\\freq.js');
 
 function freqColor(word) {
-    let posInAll = freq.all.indexOf(word.toLowerCase());
-    let posInBook = freq.book.indexOf(word.toLowerCase());
+    let weightInAll = freq.all[word.toLowerCase()];
 
-    if (posInBook == -1)
-        posInBook = freq.book.length;
-    if (posInAll == -1)
-        posInAll = freq.all.length;
+    let weightInMaks = freq.maks[word.toLowerCase()];
+    let weightInOluhi = freq.oluhi[word.toLowerCase()];
 
-    let posInBookRel = posInBook / freq.book.length;
-    let posInAllRel = posInAll / freq.all.length;
+    if (weightInAll == null)
+        weightInAll = 0;
+    if (weightInMaks == null)
+        weightInMaks = 0;
+    if (weightInOluhi == null)
+        weightInOluhi = 0;
+
     return {
-        r: 200 - Math.round(posInAllRel * 200),
-        g: 200 - Math.round(posInBookRel * 200),
-        b: 0,
+        r: Math.round(Math.pow(weightInAll, 1/20) * 200),
+        g: Math.round(Math.pow(weightInMaks, 1/20) * 200),
+        b: Math.round(Math.pow(weightInOluhi, 1/20) * 200),
     }
 }
 
