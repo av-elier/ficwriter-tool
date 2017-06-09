@@ -33,35 +33,6 @@ function countWords(book) {
     return wordsCount;
 }
 
-function mystemWordsCount(wordsCount) {
-    console.log('mystemWordsCount');
-    let mystemedWordsCount = {};
-    let mystemBuffer = [];
-    let mystemPromise = Promise.resolve();
-    const wordsArr = Object.keys(wordsCount);
-    for (var i = 0; i < wordsArr.length; i++) {
-        var w = wordsArr[i];
-        mystemBuffer.push(w);
-        if (mystemBuffer.length < 2000 && i < wordsArr.length - 1) continue;
-        let mystemBufferCurrent = mystemBuffer;
-        mystemBuffer = [];
-        mystemPromise = mystemPromise.then(() => {
-            return new Promise((resolve, reject) => {
-                console.log(`mystemWordsCount, another ${mystemBufferCurrent.length} words`);
-                mystem.list2(mystemBufferCurrent, function(mystemedWords) {
-                    for (var j = 0; j < mystemBufferCurrent.length; j++) {
-                        const w = mystemBufferCurrent[j];
-                        const mw = mystemedWords[j];
-                        mystemedWordsCount[mw] = (mystemedWordsCount[mw] || 0) + wordsCount[w];
-                    }
-                    resolve();
-                });
-            });
-        });
-    }
-    return mystemPromise.then(() => mystemedWordsCount);
-}
-
 function saveMystemedWordsCount(mystemWordsCount, path) {
     console.log(`saveMystemedWordsCount(${mystemWordsCount}, ${path})`);
     return new Promise((resolve, reject) => {
@@ -77,11 +48,32 @@ function saveMystemedWordsCount(mystemWordsCount, path) {
     });
 }
 
+function loadWordCountFreqRNC2011(path) {
+    return new Promise((resolve, reject) => {
+        let wordsAllWeights = {};
+        csv.fromPath(path, {delimiter: '\t'})
+            .on("data", function(data){
+                const weight = Number(data[2]);
+                var parts = data[0].split(/[^а-яёА-ЯЁ]/)
+                    .filter(w => w !== '' && w != null)
+                parts.forEach(p => wordsAllWeights[p] = (wordsAllWeights[p] || 0) + weight / parts.length);
+            })
+            .on("end", function(){
+                resolve(wordsAllWeights);
+            });
+    });
+}
+
 module.exports = {
     prepare: function(pathIn, pathOut) {
         return loadFullFile(pathIn)
             .then(countWords)
-            .then(mystemWordsCount)
+            .then(mystem.mystemWordsCount)
+            .then((mwc) => saveMystemedWordsCount(mwc, pathOut));
+    },
+    prepareFreqRNC2011: function(pathIn, pathOut) {
+        return loadWordCountFreqRNC2011(pathIn)
+            .then(mystem.mystemWordsCount)
             .then((mwc) => saveMystemedWordsCount(mwc, pathOut));
     }
 };

@@ -41,11 +41,42 @@ function mystemList2(inpList, cb) {
     execAndRead(inpList.join('\n'), function (lines) {
         let mystemList = lines.split('\n')
             .filter(l => l !== '')
-            .map(l => /^([\wа-яА-ЯёЁ]+)\{([\wа-яА-ЯёЁ]+)[^\w]/.exec(l)[2]);
+            .map(l => /^([\wа-яА-ЯёЁ]+)\{([\wа-яА-ЯёЁ]+)[^\w]/.exec(l))
+            .filter(r => r != null)
+            .map(r => r[2]);
         console.assert(mystemList.length === inpList.length, `(${mystemList.length} !== ${inpList.length}\n`
             + JSON.stringify(mystemList) + '\n' + JSON.stringify(inpList));
         cb(mystemList);
     });
+}
+
+function mystemWordsCount(wordsCount) {
+    console.log('mystemWordsCount');
+    let mystemedWordsCount = {};
+    let mystemBuffer = [];
+    let mystemPromise = Promise.resolve();
+    const wordsArr = Object.keys(wordsCount);
+    for (var i = 0; i < wordsArr.length; i++) {
+        var w = wordsArr[i];
+        mystemBuffer.push(w);
+        if (mystemBuffer.length < 5000 && i < wordsArr.length - 1) continue;
+        let mystemBufferCurrent = mystemBuffer;
+        mystemBuffer = [];
+        mystemPromise = mystemPromise.then(() => {
+            return new Promise((resolve, reject) => {
+                console.log(`mystemWordsCount, another ${mystemBufferCurrent.length} words`);
+                mystemList2(mystemBufferCurrent, function(mystemedWords) {
+                    for (var j = 0; j < mystemBufferCurrent.length; j++) {
+                        const w = mystemBufferCurrent[j];
+                        const mw = mystemedWords[j];
+                        mystemedWordsCount[mw] = (mystemedWordsCount[mw] || 0) + wordsCount[w];
+                    }
+                    resolve();
+                });
+            });
+        });
+    }
+    return mystemPromise.then(() => mystemedWordsCount);
 }
 
 module.exports = {
@@ -53,4 +84,5 @@ module.exports = {
     list: (words, cb) => mystem(words.join('\n'), cb),
     raw: (sencence, cb) => mystem(sencence, cb),
     list2: (words, cb) => mystemList2(words, cb),
+    mystemWordsCount: mystemWordsCount,
 };
