@@ -8,7 +8,8 @@
   "repository": "https://github.com/av-elier/ficwriter-tool",
   "author": "av-elier",
   "dependencies": {
-    "fast-csv": "2.4.0"
+    "fast-csv": "2.4.0",
+    "colorsys": "1.0.10"
   },
   "devDependencies": {
     "electron": "~1.6.2"

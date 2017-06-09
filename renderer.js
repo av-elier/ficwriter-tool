@@ -2,7 +2,9 @@ Array.prototype.flatMap = function(lambda) {
     return Array.prototype.concat.apply([], this.map(lambda));
 };
 
-var ipc = require('electron').ipcRenderer;
+const ipc = require('electron').ipcRenderer;
+
+const colorsys = require('colorsys');
 
 var fictext = document.getElementById('fictext');
 var ficcolored = document.getElementById('ficcolored');
@@ -24,11 +26,14 @@ function freqColor(word) {
     if (weightInOluhi == null)
         weightInOluhi = 0;
 
-    return {
+    const rgb = {
         r: Math.round(Math.pow(weightInAll, 1/20) * 200),
         g: Math.round(Math.pow(weightInMaks, 1/20) * 200),
         b: Math.round(Math.pow(weightInOluhi, 1/20) * 200),
     }
+    let hsv = colorsys.rgb_to_hsv(rgb)[0];
+    hsv.s = Math.round(Math.pow(hsv.s / 100, 1/2) * 100);
+    return colorsys.hsv_to_hex(hsv);
 }
 
 
@@ -36,7 +41,7 @@ var i = 0;
 function colorizeWord(word, base) {
     if (!base) return word;
     let c = freqColor(base);
-    return `<span style="color: rgb(${c.r},${c.g},${c.b});">${word}</span>`
+    return `<span style="color: ${c};">${word}</span>`
 }
 let lastSyncId = 0;
 function syncColored() {
