@@ -11,38 +11,77 @@ let wordsBookWeights = {};
 let wordsBookWeightsMystemed = {};
 
 function weightsToSorted(weights) {
-    let wSorted = [];
-    let weightsArray = Object.keys(weights);
-    wSorted = weightsArray.sort((a,b) => {
-        return Number(weightsArray[a]) < Number(weightsArray[b]);
-    });
-    return wSorted;
+    return Object.keys(weights).sort((a, b) => weights[b] - weights[a]);
 }
 
-csv.fromPath("freq\\Maks.csv", {delimiter: ','}).on("data", function(data) {
-        let wo = data[0];
-        wordsBookWeights[wo] = Number(data[1]);
-        console.assert(Number(data[1]) > 0)
-        mystemBuffer.push(wo);
-        if (mystemBuffer.length < 500 && data[0] !== '')
-            return;
-        console.log(`buffer of ${mystemBuffer.length} words pushed to mystem`)
-        let words = mystemBuffer;
-        mystemBuffer = [];
+function loadFullFile(path) {
+    console.log('loadFullFile');
+    return new Promise((resolve, reject) => {
+        fs.readFile(path, (err, data) => {
+            if (err != null) reject(err);
+            else resolve(data.toString());
+        });
+    })
+}
 
-        mystemPromise = mystemPromise.then(() => new Promise((resolve) => {
-            mystem.list(words, (mainGuesses) => {
-                Object.keys(mainGuesses).forEach((w) => {
-                    const g = mainGuesses[w];
-                    wordsBookWeightsMystemed[g] = ( wordsBookWeightsMystemed[g] || 0 ) + Number(wordsBookWeights[w] || 0);
-                })
-                resolve();
+function countWords(book) {
+    console.log('countWords');
+    let wordsCount = {};
+    book.split(/[^а-яёА-ЯЁ]/)
+        .filter(w => w !== '' && w != null)
+        .forEach(w => wordsCount[w] = (wordsCount[w] || 0) + 1)
+    return wordsCount;
+}
+
+function mystemWordsCount(wordsCount) {
+    console.log('mystemWordsCount');
+    let mystemedWordsCount = {};
+    let mystemBuffer = [];
+    let mystemPromise = Promise.resolve();
+    const wordsArr = Object.keys(wordsCount);
+    for (var i = 0; i < wordsArr.length; i++) {
+        var w = wordsArr[i];
+        mystemBuffer.push(w);
+        if (mystemBuffer.length < 2000 && i < wordsArr.length - 1) continue;
+        let mystemBufferCurrent = mystemBuffer;
+        mystemBuffer = [];
+        mystemPromise = mystemPromise.then(() => {
+            return new Promise((resolve, reject) => {
+                console.log(`mystemWordsCount, another ${mystemBufferCurrent.length} words`);
+                mystem.list2(mystemBufferCurrent, function(mystemedWords) {
+                    for (var j = 0; j < mystemBufferCurrent.length; j++) {
+                        const w = mystemBufferCurrent[j];
+                        const mw = mystemedWords[j];
+                        mystemedWordsCount[mw] = (mystemedWordsCount[mw] || 0) + wordsCount[w];
+                    }
+                    resolve();
+                });
             });
-        }));
-    }).on("end", function(){
-        mystemPromise.then(() => {
-            const wordsBookSorted = weightsToSorted(wordsBookWeightsMystemed);
-            const wordsCsv = wordsBookSorted.map((w, i) => `${w},${wordsBookSorted.length - i}`).join('\n');
-            fs.writeFileSync('maks_mystemed.cvs', wordsCsv);
-        })
+        });
+    }
+    return mystemPromise.then(() => mystemedWordsCount);
+}
+
+function saveMystemedWordsCount(mystemWordsCount, path) {
+    console.log(`saveMystemedWordsCount(${mystemWordsCount}, ${path})`);
+    return new Promise((resolve, reject) => {
+        const wordsBookSorted = weightsToSorted(mystemWordsCount);
+        const wordsCsv = wordsBookSorted.map((w, i) => `${w},${mystemWordsCount[w]}`).join('\n');
+        fs.writeFile(path, wordsCsv, () => {
+            resolve({
+                mystemWordsCount: mystemWordsCount,
+                wordsBookSorted: wordsBookSorted,
+                wordsCsv: wordsCsv,
+            });
+        });
     });
+}
+
+module.exports = {
+    prepare: function(pathIn, pathOut) {
+        return loadFullFile(pathIn)
+            .then(countWords)
+            .then(mystemWordsCount)
+            .then((mwc) => saveMystemedWordsCount(mwc, pathOut));
+    }
+};
